@@ -1,58 +1,63 @@
 import pickle
-import pandas as pd 
+import pandas as pd
 import numpy as np
 import streamlit as st
-def predict_species(seo_len, sep_width,pet_len, pet_wild, scaler_path, model_path):
+
+def predict_species(sep_len,sep_width,pet_len,pet_wild,scaler_path,model_path):
     try:
-        #Load scaler
+        # load the scaler
         with open(scaler_path,'rb') as file1:
             scaler = pickle.load(file1)
-        #Load the model 
-        with open(model_path, 'rb') as file2:
+
+        # load the model
+        with open(model_path,'rb')as file2:
             model = pickle.load(file2)
-        #prepare input data
+
+        # prepare input data
         dct = {
             'SepalLengthCm':[sep_len],
-            'SepalWidthCm': [sep_width],
+            'SepalWidthCm':[sep_width],
             'PetalLengthCm':[pet_len],
-            'PetalWidthCm':[pet_wid]
-
+            'PetalWidthCm':[pet_wild]
         }
         x_new = pd.DataFrame(dct)
-        #Transform input data
+
+        # Transform input data
         xnew_pre = scaler.transform(x_new)
-        #make predictions
-        pred = model.predict(xnew_pre)
+
+        # make predictions
+        pred =  model.predict(xnew_pre)
         probs = model.predict_proba(xnew_pre)
         max_prob = np.max(probs)
 
-        return pred, max_prob
+        return pred,max_prob
     except Exception as e:
-        #Log and display errors
-        st.error(f"Error during prediction : {str(e)}")
+        # log and display errors
+        st.error(f"Error during predication: {str(e)}")
         return None, None
-#Streamlit UI
-st.title("Iris Species Prediction")
-#Input fields for the features 
-sep_len = st.number_input("SepalLengthCm",min_value=0.0, step =0.1, value =5.1)
-sep_width = st.number_input("SepalWidthCm",min_value=0.0, step =0.1, value =3.5)
-pet_len = st.number_input("PetalLengthCm",min_value=0.0, step =0.1, value =1.4)
-pet_wid = st.number_input("PetalWidthCm",min_value=0.0, step =0.1, value =0.2)
+    
+# StreamLit UI
+st.title("Iris Species Predictor")
 
-#Prediction button 
-if st.button("predict"):
-    #file path
+# input fields for the features
+sep_len = st.number_input("SepalLengthCm",min_value=0.0,step=0.1,value=5.1)
+sep_width = st.number_input("SepalWidthCm",min_value=0.0,step=0.1,value=3.5)
+pet_len = st.number_input("PetalLengthCm",min_value=0.0,step=0.1,value=1.4)
+pet_wid = st.number_input("PetalWidthCm",min_value=0.0,step=0.1,value=3.5)
+
+# prediction button
+if st.button("Predict"):
+    # file paths
     scaler_path = 'Notebook/scaler.pkl'
     model_path = 'Notebook/model.pkl'
 
-    #Call the prediction function 
-    pred, max_prob = predict_species(sep_len, sep_width, pet_len, pet_wid, scaler_path, model_path)
+    #call the predictions functions
+    pred, max_prob = predict_species(sep_len,sep_width,pet_len,pet_wid,scaler_path,model_path)
 
-    #Display result 
+    # Display results
     if pred is not None and max_prob is not None:
-        st.subheader(f'Predicted Species : {pred[0]}')
-        st.subheader(f'Prediction Probability: {max_prob: .4f}')
+        st.subheader(f'Predicated Species:{pred[0]}')
+        st.subheader(f'Prediction Probabiltiy:{max_prob:.4f}')
         st.progress(max_prob)
     else:
-        st.error("Prediction failed. Check the input value and model files.")
-    
+        st.error("Predication Failed. Check the input values are model files. ")
